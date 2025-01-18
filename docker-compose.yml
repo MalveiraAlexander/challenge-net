@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  megapix-net:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        BUILD_CONFIGURATION: Release
+    ports:
+      - "8080:8080" # Mapea el puerto 8080 del contenedor al host
+      - "8081:8081" # Otro puerto, si es necesario
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development # Cambia a Production para entornos productivos
+      ConnectionStrings__DefaultConnection: "Server=db;Database=megapix_countries;User Id=postgres;Password=postgres"
+    depends_on:
+      - db
+    networks:
+      - megapix-network-net
+    container_name: net-app
+    restart: always
+
+  db:
+    image: postgres:15
+    container_name: postgres-db-net
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: megapix_countries
+    ports:
+      - "5432:5432" # Mapea el puerto 5432 del contenedor al host
+    volumes:
+      - postgres-data-net:/var/lib/postgresql/data
+    networks:
+      - megapix-network-net
+
+networks:
+  megapix-network-net:
+    driver: bridge
+
+volumes:
+  postgres-data-net:
